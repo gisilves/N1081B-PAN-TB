@@ -4,18 +4,30 @@ from PyQt5.QtCore import QTimer
 from N1081B_sdk import N1081B
 
 def enable_calibration():
-    N1081B_device2.configure_digital_generator(N1081B.Section.SEC_B,True,True,False,False)
+    # Retrieve SEC_B configuration
+    current_config = N1081B_device2.get_function_configuration(N1081B.Section.SEC_B)
+    # Retrieve the 'enable' value for fake spill from current_config
+    target_lemo = 1
+    lemo_enables = current_config['data']['lemo_enables']
+    fake_spill_en = target_enable_value = next(item['enable'] for item in lemo_enables if item['lemo'] == target_lemo)
+    N1081B_device2.configure_digital_generator(N1081B.Section.SEC_B,True,fake_spill_en,False,False)
     update_status_labels()
 
 def disable_calibration():
-    N1081B_device2.configure_digital_generator(N1081B.Section.SEC_B,False,False,False,False)
+    # Retrieve SEC_B configuration
+    current_config = N1081B_device2.get_function_configuration(N1081B.Section.SEC_B)
+    # Retrieve the 'enable' value for fake spill from current_config
+    target_lemo = 1
+    lemo_enables = current_config['data']['lemo_enables']
+    fake_spill_en = target_enable_value = next(item['enable'] for item in lemo_enables if item['lemo'] == target_lemo)
+    N1081B_device2.configure_digital_generator(N1081B.Section.SEC_B,False,fake_spill_en,False,False)
     update_status_labels()
 
 def enable_fake_spill():
     #Retrieve SEC_B configuration
     current_config = N1081B_device2.get_function_configuration(N1081B.Section.SEC_B)
     # Retrieve the 'enable' value for fake spill from current_config
-    target_lemo = 1
+    target_lemo = 0
     lemo_enables = current_config['data']['lemo_enables']
     cal_en = target_enable_value = next(item['enable'] for item in lemo_enables if item['lemo'] == target_lemo)
     N1081B_device2.configure_digital_generator(N1081B.Section.SEC_B,cal_en,True,False,False)
@@ -25,50 +37,39 @@ def disable_fake_spill():
     #Retrieve SEC_B configuration
     current_config = N1081B_device2.get_function_configuration(N1081B.Section.SEC_B)
     # Retrieve the 'enable' value for fake busy from current_config
-    target_lemo = 1
+    target_lemo = 0
     lemo_enables = current_config['data']['lemo_enables']
     cal_en = target_enable_value = next(item['enable'] for item in lemo_enables if item['lemo'] == target_lemo)
     N1081B_device1.configure_digital_generator(N1081B.Section.SEC_A,cal_en,False,False,False)
     update_status_labels()
 
 def enable_master_trigger():
-    N1081B_device1.set_output_channel_configuration(N1081B.Section.SEC_C,0,True,True,1000,False)
-    N1081B_device1.set_output_channel_configuration(N1081B.Section.SEC_C,1,True,False,0,False)
-    #N1081B_device2.configure_or_veto(N1081B.Section.SEC_C,True,True,False,False,False,False,0) 
+    N1081B_device2.set_output_channel_configuration(N1081B.Section.SEC_A,0,True,True,1000,False)
     update_status_labels()
 
 def disable_master_trigger():
-    N1081B_device1.set_output_channel_configuration(N1081B.Section.SEC_C,0,False,True,1000,False)
-    N1081B_device1.set_output_channel_configuration(N1081B.Section.SEC_C,1,False,False,0,False)
-    #N1081B_device2.configure_or_veto(N1081B.Section.SEC_C,False,False,False,False,False,False,0)
+    N1081B_device2.set_output_channel_configuration(N1081B.Section.SEC_A,0,False,True,1000,False)
     update_status_labels()
 
 def update_status_labels():
-    #Retrieve SEC_A configuration
-    current_config = N1081B_device1.get_function_configuration(N1081B.Section.SEC_A)
+    # Retrieve SEC_B configuration of PLU 2
+    current_config = N1081B_device2.get_function_configuration(N1081B.Section.SEC_B)
     # Retrieve the 'enable' value for cal_enable from current_config
     target_lemo = 0
     lemo_enables = current_config['data']['lemo_enables']
     cal_status = target_enable_value = next(item['enable'] for item in lemo_enables if item['lemo'] == target_lemo)
-
-    #Retrieve SEC_D configuration
-    current_config = N1081B_device1.get_function_configuration(N1081B.Section.SEC_D)
     # Retrieve the 'enable' value for fake_spill and fake_busy from current_config
-    target_lemo = 0
+    target_lemo = 1
     lemo_enables = current_config['data']['lemo_enables']
     fake_spill_status = target_enable_value = next(item['enable'] for item in lemo_enables if item['lemo'] == target_lemo)
 
-    target_lemo = 2
-    lemo_enables = current_config['data']['lemo_enables']
-    fake_busy_status = target_enable_value = next(item['enable'] for item in lemo_enables if item['lemo'] == target_lemo)
-
-    #Retrieve SEC_C output status on device 2
-    output_status = N1081B_device1.get_output_channel_configuration(N1081B.Section.SEC_C,0)
+    #Retrieve SEC_A output status on device 2
+    output_status = N1081B_device2.get_output_channel_configuration(N1081B.Section.SEC_A,0)
     master_trigger_status = output_status['data'].get('status')
 
-    #Retrieve SEC_X input status on device X
-    input_status = N1081B_device1.get_input_channel_configuration(N1081B.Section.SEC_A,0)
-    real_spill_status = N1081B_device1.get_input_channel_configuration(N1081B.Section.SEC_A,0)['data'].get('status')
+    #Retrieve SEC_B input status on device 1
+    input_status = N1081B_device1.get_input_channel_configuration(N1081B.Section.SEC_B,0)
+    real_spill_status = N1081B_device1.get_input_channel_configuration(N1081B.Section.SEC_B,0)['data'].get('status')
 
     # Set the background color of the QLabel based on the status
     cal_status_label.setStyleSheet("background-color: green" if cal_status else "background-color: gray")
@@ -76,16 +77,17 @@ def update_status_labels():
     fake_spill_status_label.setStyleSheet("background-color: green" if fake_spill_status else "background-color: gray")
     master_trigger_status_label.setStyleSheet("background-color: green" if master_trigger_status else "background-color: gray")
 
-# def update_lcd():
-#     target_lemo = 1
-#     lemo_counters = current_config['data']['counters']
-#     scaler_2 = next(item['value'] for item in lemo_counters if item['lemo'] == target_lemo)
-#     triggers_lcd.display(scaler_2)
+def update_lcd():
+    #Retrieve SEC_D configuration of PLU 2
+    current_config = N1081B_device2.get_function_configuration(N1081B.Section.SEC_D)
+    target_lemo = 0
+    lemo_counters = current_config['data']['counters']
+    scaler = next(item['value'] for item in lemo_counters if item['lemo'] == target_lemo)
+    triggers_lcd.display(scaler)
 
 def reset_scalers():
-    N1081B_device1.reset_channel(N1081B.Section.SEC_D,0,N1081B.FunctionType.FN_SCALER)
-    N1081B_device1.reset_channel(N1081B.Section.SEC_D,1,N1081B.FunctionType.FN_SCALER)
-    #update_lcd()    
+    N1081B_device2.reset_channel(N1081B.Section.SEC_D,0,N1081B.FunctionType.FN_SCALER)
+    update_lcd()    
  
 N1081B_device1 = N1081B("128.141.115.123")
 N1081B_device1.connect()
@@ -194,11 +196,11 @@ reset_scalers_button.setStyleSheet("font-size: 20px;")
 layout.addWidget(reset_scalers_button)
 
 update_status_labels()
-#update_lcd() 
+update_lcd() 
 
 # Set a timer to update the lcd every 1s
 timer = QTimer()
-#timer.timeout.connect(update_lcd)
+timer.timeout.connect(update_lcd)
 # Update the status labels
 timer.timeout.connect(update_status_labels)
 timer.start(1000)
