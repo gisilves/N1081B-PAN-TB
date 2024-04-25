@@ -68,9 +68,14 @@ def update_status_labels():
     output_status = N1081B_device2.get_output_channel_configuration(N1081B.Section.SEC_A,0)
     master_trigger_status = output_status['data'].get('status')
 
+    #Retrieve SEC_A input 2 configuration on device 1
+    input_status = N1081B_device1.get_input_channel_configuration(N1081B.Section.SEC_A,2)
+    hadron_trigger_status = input_status['data'].get('invert') == True
+    
     # Set the background color of the QLabel based on the status
     cal_status_label.setStyleSheet("background-color: green" if cal_status else "background-color: gray")
     fake_spill_status_label.setStyleSheet("background-color: green" if fake_spill_status else "background-color: gray")
+    hadron_trigger_status_label.setStyleSheet("background-color: green" if hadron_trigger_status else "background-color: gray")
     master_trigger_status_label.setStyleSheet("background-color: green" if master_trigger_status else "background-color: gray")
 
 def update_lcd():
@@ -93,7 +98,19 @@ def reset_trigger_counter():
 def reset_spill_counter():
     N1081B_device2.reset_channel(N1081B.Section.SEC_D,1,N1081B.FunctionType.FN_SCALER)
     update_lcd()    
- 
+
+def set_hadron_trigger():
+    # If we want to trigger on hadrons, the Cerenkov will not fire
+    # Set input 2 of SEC_A of device 1 to INVERT
+    N1081B_device1.set_input_channel_configuration(N1081B.Section.SEC_A,channel=2, status=True, invert=True, enable_gate_delay=False, gate = 15, delay = 0)
+    update_status_labels()
+
+def set_eletron_trigger():
+    # If we want to trigger on electrons, the Cerenkov will fire
+    # Set input 2 of SEC_A of device 1 to NORMAL
+    N1081B_device1.set_input_channel_configuration(N1081B.Section.SEC_A,channel=2, status=True, invert=False, enable_gate_delay=False, gate = 15, delay = 0)
+    update_status_labels()
+
 N1081B_device1 = N1081B("128.141.115.60")
 N1081B_device1.connect()
 
@@ -117,6 +134,7 @@ layout.addWidget(logo)
 # Create a horizontal layout for each status indicator
 cal_layout = QHBoxLayout()
 fake_spill_layout = QHBoxLayout()
+hadron_trigger_layout = QHBoxLayout()
 master_trigger_layout = QHBoxLayout()
 triggers_layout = QHBoxLayout()
 spills_layout = QHBoxLayout()
@@ -126,59 +144,77 @@ reset_spills_layout = QHBoxLayout()
 # ENABLE CAL button 
 enable_button = QPushButton("ENABLE CAL")
 enable_button.clicked.connect(enable_calibration)
-enable_button.setStyleSheet("font-size: 20px;")
+enable_button.setStyleSheet("font-size: 15px;")
 layout.addWidget(enable_button)
 
 # DISABLE CAL button 
 disable_button = QPushButton("DISABLE CAL")
 disable_button.clicked.connect(disable_calibration)
-disable_button.setStyleSheet("font-size: 20px;")
+disable_button.setStyleSheet("font-size: 15px;")
 layout.addWidget(disable_button)
 
 # ENABLE FAKE SPILL button 
 enable_spill_button = QPushButton("ENABLE FAKE SPILL")
 enable_spill_button.clicked.connect(enable_fake_spill)
-enable_spill_button.setStyleSheet("font-size: 20px;")
+enable_spill_button.setStyleSheet("font-size: 15px;")
 layout.addWidget(enable_spill_button)
 
 # DISABLE FAKE SPILL button 
 disable_spill_button = QPushButton("DISABLE FAKE SPILL")
 disable_spill_button.clicked.connect(disable_fake_spill)
-disable_spill_button.setStyleSheet("font-size: 20px;")
+disable_spill_button.setStyleSheet("font-size: 15px;")
 layout.addWidget(disable_spill_button)
+
+# SET HADRON TRIGGER toggle button
+set_hadron_trigger_button = QPushButton("SET HADRON TRIGGER")
+set_hadron_trigger_button.clicked.connect(set_hadron_trigger)
+set_hadron_trigger_button.setStyleSheet("font-size: 15px;")
+layout.addWidget(set_hadron_trigger_button)
+
+# SET ELECTRON TRIGGER toggle button
+set_electron_trigger_button = QPushButton("SET ELECTRON TRIGGER")
+set_electron_trigger_button.clicked.connect(set_eletron_trigger)
+set_electron_trigger_button.setStyleSheet("font-size: 15px;")
+layout.addWidget(set_electron_trigger_button)
 
 # ENABLE MASTER TRIGGER button
 enable_master_trigger_button = QPushButton("ENABLE MASTER TRIGGER")
 enable_master_trigger_button.clicked.connect(enable_master_trigger)
-enable_master_trigger_button.setStyleSheet("font-size: 20px;")
+enable_master_trigger_button.setStyleSheet("font-size: 15px;")
 layout.addWidget(enable_master_trigger_button)
 
 # DISABLE MASTER TRIGGER button
 disable_master_trigger_button = QPushButton("DISABLE MASTER TRIGGER")
 disable_master_trigger_button.clicked.connect(disable_master_trigger)
-disable_master_trigger_button.setStyleSheet("font-size: 20px;")
+disable_master_trigger_button.setStyleSheet("font-size: 15px;")
 layout.addWidget(disable_master_trigger_button)
-
 
 # Add text label to the left of each LED indicator
 cal_label = QLabel("CAL ENABLE")
 cal_layout.addWidget(cal_label)
 cal_status_label = QLabel()
-cal_status_label.setFixedSize(20, 20)
+cal_status_label.setFixedSize(20, 15)
 cal_layout.addWidget(cal_status_label)
 layout.addLayout(cal_layout)
+
+hadron_trigger_label = QLabel("HADRON TRIGGER")
+hadron_trigger_layout.addWidget(hadron_trigger_label)
+hadron_trigger_status_label = QLabel()
+hadron_trigger_status_label.setFixedSize(20, 15)
+hadron_trigger_layout.addWidget(hadron_trigger_status_label)
+layout.addLayout(hadron_trigger_layout)
 
 fake_spill_label = QLabel("FAKE SPILL")
 fake_spill_layout.addWidget(fake_spill_label)
 fake_spill_status_label = QLabel()
-fake_spill_status_label.setFixedSize(20, 20)
+fake_spill_status_label.setFixedSize(20, 15)
 fake_spill_layout.addWidget(fake_spill_status_label)
 layout.addLayout(fake_spill_layout)
 
 master_trigger_label = QLabel("TRIGGER OUTPUT")
 master_trigger_layout.addWidget(master_trigger_label)
 master_trigger_status_label = QLabel()
-master_trigger_status_label.setFixedSize(20, 20)
+master_trigger_status_label.setFixedSize(20, 15)
 master_trigger_layout.addWidget(master_trigger_status_label)
 layout.addLayout(master_trigger_layout)
 
@@ -186,7 +222,7 @@ layout.addLayout(master_trigger_layout)
 triggers_label = QLabel("TRIGGERS")
 triggers_layout.addWidget(triggers_label)
 triggers_lcd = QLCDNumber()
-triggers_lcd.setFixedSize(250, 30)
+triggers_lcd.setFixedSize(250, 20)
 triggers_layout.addWidget(triggers_lcd)
 layout.addLayout(triggers_layout)
 
@@ -197,7 +233,7 @@ triggers_lcd.setSegmentStyle(QLCDNumber.Flat)
 spills_label = QLabel("SPILLS")
 spills_layout.addWidget(spills_label)
 spills_lcd = QLCDNumber()
-spills_lcd.setFixedSize(250, 30)
+spills_lcd.setFixedSize(250, 20)
 spills_layout.addWidget(spills_lcd)
 layout.addLayout(spills_layout)
 
@@ -207,13 +243,13 @@ spills_lcd.setSegmentStyle(QLCDNumber.Flat)
 # Add a RESET TRIGGER button
 reset_trigger_button = QPushButton("RESET TRIGGERS")
 reset_trigger_button.clicked.connect(reset_trigger_counter)
-reset_trigger_button.setStyleSheet("font-size: 20px;")
+reset_trigger_button.setStyleSheet("font-size: 15px;")
 layout.addWidget(reset_trigger_button)
 
 # Add a RESET SPILL button
 reset_spill_button = QPushButton("RESET SPILLS")
 reset_spill_button.clicked.connect(reset_spill_counter)
-reset_spill_button.setStyleSheet("font-size: 20px;")
+reset_spill_button.setStyleSheet("font-size: 15px;")
 layout.addWidget(reset_spill_button)
 
 update_status_labels()
