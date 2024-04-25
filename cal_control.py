@@ -81,8 +81,16 @@ def update_lcd():
     scaler = next(item['value'] for item in lemo_counters if item['lemo'] == target_lemo)
     triggers_lcd.display(scaler)
 
-def reset_scalers():
+    target_lemo = 1
+    lemo_counters = current_config['data']['counters']
+    scaler = next(item['value'] for item in lemo_counters if item['lemo'] == target_lemo)
+    spills_lcd.display(scaler)
+
+def reset_trigger_counter():
     N1081B_device2.reset_channel(N1081B.Section.SEC_D,0,N1081B.FunctionType.FN_SCALER)
+    update_lcd()
+
+def reset_spill_counter():
     N1081B_device2.reset_channel(N1081B.Section.SEC_D,1,N1081B.FunctionType.FN_SCALER)
     update_lcd()    
  
@@ -103,7 +111,7 @@ layout = QVBoxLayout()
 logo_layout = QHBoxLayout()
 # Add the logo to the layout (logo.png should be in the same directory as this script)
 logo = QLabel()
-logo.setPixmap(QPixmap("logo.png", "PNG").scaledToWidth(400))
+logo.setPixmap(QPixmap("logo.png"))
 layout.addWidget(logo)
 
 # Create a horizontal layout for each status indicator
@@ -112,7 +120,8 @@ fake_spill_layout = QHBoxLayout()
 master_trigger_layout = QHBoxLayout()
 triggers_layout = QHBoxLayout()
 spills_layout = QHBoxLayout()
-resete_scalers_layout = QHBoxLayout()
+reset_triggers_layout = QHBoxLayout()
+reset_spills_layout = QHBoxLayout()
 
 # ENABLE CAL button 
 enable_button = QPushButton("ENABLE CAL")
@@ -195,11 +204,17 @@ layout.addLayout(spills_layout)
 spills_lcd.setDigitCount(12)
 spills_lcd.setSegmentStyle(QLCDNumber.Flat)
 
-# Add a RESET SCALERS button
-reset_scalers_button = QPushButton("RESET SCALERS")
-reset_scalers_button.clicked.connect(reset_scalers)
-reset_scalers_button.setStyleSheet("font-size: 20px;")
-layout.addWidget(reset_scalers_button)
+# Add a RESET TRIGGER button
+reset_trigger_button = QPushButton("RESET SCALERS")
+reset_trigger_button.clicked.connect(reset_trigger_counter)
+reset_trigger_button.setStyleSheet("font-size: 20px;")
+layout.addWidget(reset_trigger_button)
+
+# Add a RESET SPILL button
+reset_spill_button = QPushButton("RESET SPILLS")
+reset_spill_button.clicked.connect(reset_spill_counter)
+reset_spill_button.setStyleSheet("font-size: 20px;")
+layout.addWidget(reset_spill_button)
 
 update_status_labels()
 update_lcd() 
