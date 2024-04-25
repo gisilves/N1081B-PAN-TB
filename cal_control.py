@@ -205,7 +205,7 @@ spills_lcd.setDigitCount(12)
 spills_lcd.setSegmentStyle(QLCDNumber.Flat)
 
 # Add a RESET TRIGGER button
-reset_trigger_button = QPushButton("RESET SCALERS")
+reset_trigger_button = QPushButton("RESET TRIGGERS")
 reset_trigger_button.clicked.connect(reset_trigger_counter)
 reset_trigger_button.setStyleSheet("font-size: 20px;")
 layout.addWidget(reset_trigger_button)
