@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QLCDNumber
 from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QPixmap
 from N1081B_sdk import N1081B
 
 def enable_calibration():
@@ -40,7 +41,7 @@ def disable_fake_spill():
     target_lemo = 0
     lemo_enables = current_config['data']['lemo_enables']
     cal_en = target_enable_value = next(item['enable'] for item in lemo_enables if item['lemo'] == target_lemo)
-    N1081B_device1.configure_digital_generator(N1081B.Section.SEC_A,cal_en,False,False,False)
+    N1081B_device2.configure_digital_generator(N1081B.Section.SEC_B,cal_en,False,False,False)
     update_status_labels()
 
 def enable_master_trigger():
@@ -67,19 +68,14 @@ def update_status_labels():
     output_status = N1081B_device2.get_output_channel_configuration(N1081B.Section.SEC_A,0)
     master_trigger_status = output_status['data'].get('status')
 
-    #Retrieve SEC_B input status on device 1
-    input_status = N1081B_device1.get_input_channel_configuration(N1081B.Section.SEC_B,0)
-    real_spill_status = N1081B_device1.get_input_channel_configuration(N1081B.Section.SEC_B,0)['data'].get('status')
-
     # Set the background color of the QLabel based on the status
     cal_status_label.setStyleSheet("background-color: green" if cal_status else "background-color: gray")
-    real_spill_status_label.setStyleSheet("background-color: green" if real_spill_status else "background-color: gray")
     fake_spill_status_label.setStyleSheet("background-color: green" if fake_spill_status else "background-color: gray")
     master_trigger_status_label.setStyleSheet("background-color: green" if master_trigger_status else "background-color: gray")
 
 def update_lcd():
     #Retrieve SEC_D configuration of PLU 2
-    current_config = N1081B_device2.get_function_configuration(N1081B.Section.SEC_D)
+    current_config = N1081B_device2.get_function_results(N1081B.Section.SEC_D)
     target_lemo = 0
     lemo_counters = current_config['data']['counters']
     scaler = next(item['value'] for item in lemo_counters if item['lemo'] == target_lemo)
@@ -87,9 +83,10 @@ def update_lcd():
 
 def reset_scalers():
     N1081B_device2.reset_channel(N1081B.Section.SEC_D,0,N1081B.FunctionType.FN_SCALER)
+    N1081B_device2.reset_channel(N1081B.Section.SEC_D,1,N1081B.FunctionType.FN_SCALER)
     update_lcd()    
  
-N1081B_device1 = N1081B("128.141.115.123")
+N1081B_device1 = N1081B("128.141.115.60")
 N1081B_device1.connect()
 
 N1081B_device2 = N1081B("128.141.115.123")
@@ -102,14 +99,19 @@ window.resize(400, 300)
 
 layout = QVBoxLayout()
 
+# Create a horizontal layout for the logo
+logo_layout = QHBoxLayout()
+# Add the logo to the layout (logo.png should be in the same directory as this script)
+logo = QLabel()
+logo.setPixmap(QPixmap("logo.png", "PNG").scaledToWidth(400))
+layout.addWidget(logo)
+
 # Create a horizontal layout for each status indicator
 cal_layout = QHBoxLayout()
 fake_spill_layout = QHBoxLayout()
-real_spill_layout = QHBoxLayout()
 master_trigger_layout = QHBoxLayout()
-
 triggers_layout = QHBoxLayout()
-
+spills_layout = QHBoxLayout()
 resete_scalers_layout = QHBoxLayout()
 
 # ENABLE CAL button 
@@ -157,13 +159,6 @@ cal_status_label.setFixedSize(20, 20)
 cal_layout.addWidget(cal_status_label)
 layout.addLayout(cal_layout)
 
-real_spill_label = QLabel("REAL SPILL")
-real_spill_layout.addWidget(real_spill_label)
-real_spill_status_label = QLabel()
-real_spill_status_label.setFixedSize(20, 20)
-real_spill_layout.addWidget(real_spill_status_label)
-layout.addLayout(real_spill_layout)
-
 fake_spill_label = QLabel("FAKE SPILL")
 fake_spill_layout.addWidget(fake_spill_label)
 fake_spill_status_label = QLabel()
@@ -188,6 +183,17 @@ layout.addLayout(triggers_layout)
 
 triggers_lcd.setDigitCount(12)
 triggers_lcd.setSegmentStyle(QLCDNumber.Flat)
+
+# Add a QLCDNumber to display the number of spills (real or fake)
+spills_label = QLabel("SPILLS")
+spills_layout.addWidget(spills_label)
+spills_lcd = QLCDNumber()
+spills_lcd.setFixedSize(250, 30)
+spills_layout.addWidget(spills_lcd)
+layout.addLayout(spills_layout)
+
+spills_lcd.setDigitCount(12)
+spills_lcd.setSegmentStyle(QLCDNumber.Flat)
 
 # Add a RESET SCALERS button
 reset_scalers_button = QPushButton("RESET SCALERS")
