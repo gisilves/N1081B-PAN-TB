@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
         self.set_threshold_button = QPushButton("Set Cerenkov Threshold (mV)")
         self.set_threshold_button.clicked.connect(self.set_cerenkov_threshold)
         self.cerenkov_threshold_layout.addWidget(self.set_threshold_button)
-        
+        self.settings_layout.addLayout(self.cerenkov_threshold_layout)
 
         # Create a layout for each status indicator
         self.cal_layout = QHBoxLayout()
