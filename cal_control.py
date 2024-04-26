@@ -48,8 +48,8 @@ class MainWindow(QMainWindow):
             ("DISABLE CAL", self.disable_calibration),
             ("ENABLE FAKE SPILL", self.enable_fake_spill),
             ("DISABLE FAKE SPILL", self.disable_fake_spill),
-            ("CERENKOV OFF TRIGGER", self.set_cerenkov_off_trigger),
-            ("CERENKOV IN TRIGGER", self.set_cerenkov_trigger),
+            ("CERENKOV ANTICOINCIDENCE TRIGGER", self.set_cerenkov_off_trigger),
+            ("CERENKOV COINCIDENCE TRIGGER", self.set_cerenkov_trigger),
             ("ENABLE MASTER TRIGGER", self.enable_master_trigger),
             ("DISABLE MASTER TRIGGER", self.disable_master_trigger)
             ]
@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
         self.set_threshold_button = QPushButton("Set Cerenkov Threshold (mV)")
         self.set_threshold_button.clicked.connect(self.set_cerenkov_threshold)
         self.cerenkov_threshold_layout.addWidget(self.set_threshold_button)
-        self.settings_layout.addLayout(self.cerenkov_threshold_layout)
+        
 
         # Create a layout for each status indicator
         self.cal_layout = QHBoxLayout()
@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
         self.cal_layout.addWidget(self.cal_status_label)
         self.layout.addLayout(self.cal_layout)
 
-        self.cer_trigger_label = QLabel("CERENKOV IN TRIGGER")
+        self.cer_trigger_label = QLabel("CERENKOV COINCIDENCE TRIGGER")
         self.cer_trigger_layout.addWidget(self.cer_trigger_label)
         self.cer_trigger_status_label = QLabel()
         self.cer_trigger_status_label.setFixedSize(20, 15)
