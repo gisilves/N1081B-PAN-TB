@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QLCDNumber
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QPixmap
 from N1081B_sdk import N1081B
 
@@ -123,13 +123,44 @@ window.setWindowTitle("N1081B Control for PAN TB")
 window.resize(400, 300)
 
 layout = QVBoxLayout()
+layout.setSpacing(5)
 
 # Create a horizontal layout for the logo
 logo_layout = QHBoxLayout()
 # Add the logo to the layout (logo.png should be in the same directory as this script)
 logo = QLabel()
 logo.setPixmap(QPixmap("logo.png"))
+# Center the logo
+logo.setAlignment(logo.alignment() | Qt.AlignCenter)
 layout.addWidget(logo)
+
+# Define a dictionary to hold button styles (rounded corners, lightgray background)
+button_styles = {
+    "font-size": "15px"
+}
+
+# Create buttons and apply styles
+buttons = [
+    ("ENABLE CAL", enable_calibration),
+    ("DISABLE CAL", disable_calibration),
+    ("ENABLE FAKE SPILL", enable_fake_spill),
+    ("DISABLE FAKE SPILL", disable_fake_spill),
+    ("SET HADRON TRIGGER", set_hadron_trigger),
+    ("SET ELECTRON TRIGGER", set_eletron_trigger),
+    ("ENABLE MASTER TRIGGER", enable_master_trigger),
+    ("DISABLE MASTER TRIGGER", disable_master_trigger),
+    ("RESET TRIGGERS", reset_trigger_counter),
+    ("RESET SPILLS", reset_spill_counter),
+]
+
+for button_text, button_action in buttons:
+    button = QPushButton(button_text)
+    button.clicked.connect(button_action)
+    # Apply styles from the dictionary
+    button.setStyleSheet("; ".join(f"{key}: {value}" for key, value in button_styles.items()))
+    layout.addWidget(button)
+
+layout.setSpacing(10)
 
 # Create a horizontal layout for each status indicator
 cal_layout = QHBoxLayout()
@@ -140,54 +171,6 @@ triggers_layout = QHBoxLayout()
 spills_layout = QHBoxLayout()
 reset_triggers_layout = QHBoxLayout()
 reset_spills_layout = QHBoxLayout()
-
-# ENABLE CAL button 
-enable_button = QPushButton("ENABLE CAL")
-enable_button.clicked.connect(enable_calibration)
-enable_button.setStyleSheet("font-size: 15px;")
-layout.addWidget(enable_button)
-
-# DISABLE CAL button 
-disable_button = QPushButton("DISABLE CAL")
-disable_button.clicked.connect(disable_calibration)
-disable_button.setStyleSheet("font-size: 15px;")
-layout.addWidget(disable_button)
-
-# ENABLE FAKE SPILL button 
-enable_spill_button = QPushButton("ENABLE FAKE SPILL")
-enable_spill_button.clicked.connect(enable_fake_spill)
-enable_spill_button.setStyleSheet("font-size: 15px;")
-layout.addWidget(enable_spill_button)
-
-# DISABLE FAKE SPILL button 
-disable_spill_button = QPushButton("DISABLE FAKE SPILL")
-disable_spill_button.clicked.connect(disable_fake_spill)
-disable_spill_button.setStyleSheet("font-size: 15px;")
-layout.addWidget(disable_spill_button)
-
-# SET HADRON TRIGGER toggle button
-set_hadron_trigger_button = QPushButton("SET HADRON TRIGGER")
-set_hadron_trigger_button.clicked.connect(set_hadron_trigger)
-set_hadron_trigger_button.setStyleSheet("font-size: 15px;")
-layout.addWidget(set_hadron_trigger_button)
-
-# SET ELECTRON TRIGGER toggle button
-set_electron_trigger_button = QPushButton("SET ELECTRON TRIGGER")
-set_electron_trigger_button.clicked.connect(set_eletron_trigger)
-set_electron_trigger_button.setStyleSheet("font-size: 15px;")
-layout.addWidget(set_electron_trigger_button)
-
-# ENABLE MASTER TRIGGER button
-enable_master_trigger_button = QPushButton("ENABLE MASTER TRIGGER")
-enable_master_trigger_button.clicked.connect(enable_master_trigger)
-enable_master_trigger_button.setStyleSheet("font-size: 15px;")
-layout.addWidget(enable_master_trigger_button)
-
-# DISABLE MASTER TRIGGER button
-disable_master_trigger_button = QPushButton("DISABLE MASTER TRIGGER")
-disable_master_trigger_button.clicked.connect(disable_master_trigger)
-disable_master_trigger_button.setStyleSheet("font-size: 15px;")
-layout.addWidget(disable_master_trigger_button)
 
 # Add text label to the left of each LED indicator
 cal_label = QLabel("CAL ENABLE")
@@ -243,13 +226,11 @@ spills_lcd.setSegmentStyle(QLCDNumber.Flat)
 # Add a RESET TRIGGER button
 reset_trigger_button = QPushButton("RESET TRIGGERS")
 reset_trigger_button.clicked.connect(reset_trigger_counter)
-reset_trigger_button.setStyleSheet("font-size: 15px;")
 layout.addWidget(reset_trigger_button)
 
 # Add a RESET SPILL button
 reset_spill_button = QPushButton("RESET SPILLS")
 reset_spill_button.clicked.connect(reset_spill_counter)
-reset_spill_button.setStyleSheet("font-size: 15px;")
 layout.addWidget(reset_spill_button)
 
 update_status_labels()
