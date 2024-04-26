@@ -48,8 +48,8 @@ class MainWindow(QMainWindow):
             ("DISABLE CAL", self.disable_calibration),
             ("ENABLE FAKE SPILL", self.enable_fake_spill),
             ("DISABLE FAKE SPILL", self.disable_fake_spill),
-            ("SET HADRON TRIGGER", self.set_hadron_trigger),
-            ("SET ELECTRON TRIGGER", self.set_electron_trigger),
+            ("CERENKOV OFF TRIGGER", self.set_cerenkov_off_trigger),
+            ("CERENKOV IN TRIGGER", self.set_cerenkov_trigger),
             ("ENABLE MASTER TRIGGER", self.enable_master_trigger),
             ("DISABLE MASTER TRIGGER", self.disable_master_trigger),
             ("RESET TRIGGERS", self.reset_trigger_counter),
@@ -72,17 +72,13 @@ class MainWindow(QMainWindow):
         self.settings_layout = QVBoxLayout()
         self.tab2.setLayout(self.settings_layout)
 
-        #self.scint_threshold_label = QLabel("Scintillator Threshold")
-        #self.settings_layout.addWidget(self.scint_threshold_label)
-
         self.scint_threshold_layout = QHBoxLayout()
         self.scint_threshold = QLineEdit()
         self.scint_threshold_layout.addWidget(self.scint_threshold)
-        self.set_threshold_button = QPushButton("Set Scintillator Threshold (mV)")
+        self.set_threshold_button = QPushButton("Set Discriminator Threshold (mV)")
         self.set_threshold_button.clicked.connect(self.set_scint_threshold)
         self.scint_threshold_layout.addWidget(self.set_threshold_button)
         self.settings_layout.addLayout(self.scint_threshold_layout)
-
 
         # Create a layout for each status indicator
         self.cal_layout = QHBoxLayout()
@@ -102,7 +98,7 @@ class MainWindow(QMainWindow):
         self.cal_layout.addWidget(self.cal_status_label)
         self.layout.addLayout(self.cal_layout)
 
-        self.hadron_trigger_label = QLabel("HADRON TRIGGER")
+        self.hadron_trigger_label = QLabel("CERENKOV IN TRIGGER")
         self.hadron_trigger_layout.addWidget(self.hadron_trigger_label)
         self.hadron_trigger_status_label = QLabel()
         self.hadron_trigger_status_label.setFixedSize(20, 15)
@@ -255,7 +251,7 @@ class MainWindow(QMainWindow):
 
         #Retrieve SEC_A input 2 configuration on device 1
         input_status = self.N1081B_device1.get_input_channel_configuration(N1081B.Section.SEC_A,2)
-        hadron_trigger_status = input_status['data'].get('invert') == True
+        hadron_trigger_status = input_status['data'].get('invert') == False
         
         # Set the background color of the QLabel based on the status
         self.cal_status_label.setStyleSheet("background-color: green" if cal_status else "background-color: gray")
@@ -284,8 +280,7 @@ class MainWindow(QMainWindow):
         self.N1081B_device2.reset_channel(N1081B.Section.SEC_D,1,N1081B.FunctionType.FN_SCALER)
         self.update_lcd()    
 
-    def set_hadron_trigger(self):
-        # If we want to trigger on hadrons, the Cerenkov will not fire
+    def set_cerenkov_off_trigger(self):
         # Set input 2 of SEC_A of device 1 to INVERT
         self.N1081B_device1.set_input_channel_configuration(N1081B.Section.SEC_A,channel=2, 
                                                             status=True, 
@@ -295,8 +290,7 @@ class MainWindow(QMainWindow):
                                                             delay = 0)
         self.update_status_labels()
 
-    def set_electron_trigger(self):
-        # If we want to trigger on electrons, the Cerenkov will fire
+    def set_cerenkov_trigger(self):
         # Set input 2 of SEC_A of device 1 to NORMAL
         self.N1081B_device1.set_input_channel_configuration(N1081B.Section.SEC_A,channel=2, 
                                                             status=True, 
