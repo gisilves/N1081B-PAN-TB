@@ -51,10 +51,8 @@ class MainWindow(QMainWindow):
             ("CERENKOV OFF TRIGGER", self.set_cerenkov_off_trigger),
             ("CERENKOV IN TRIGGER", self.set_cerenkov_trigger),
             ("ENABLE MASTER TRIGGER", self.enable_master_trigger),
-            ("DISABLE MASTER TRIGGER", self.disable_master_trigger),
-            ("RESET TRIGGERS", self.reset_trigger_counter),
-            ("RESET SPILLS", self.reset_spill_counter),
-        ]
+            ("DISABLE MASTER TRIGGER", self.disable_master_trigger)
+            ]
 
         # Loop over the buttons and add them to the layout (except the last two)
         for button_text, button_action in self.buttons[:-2]:
@@ -75,20 +73,28 @@ class MainWindow(QMainWindow):
         self.scint_threshold_layout = QHBoxLayout()
         self.scint_threshold = QLineEdit()
         self.scint_threshold_layout.addWidget(self.scint_threshold)
-        self.set_threshold_button = QPushButton("Set Discriminator Threshold (mV)")
+        self.set_threshold_button = QPushButton("Set Scintillator Threshold (mV)")
         self.set_threshold_button.clicked.connect(self.set_scint_threshold)
         self.scint_threshold_layout.addWidget(self.set_threshold_button)
         self.settings_layout.addLayout(self.scint_threshold_layout)
 
+        self.cerenkov_threshold_layout = QHBoxLayout()
+        self.cerenkov_threshold = QLineEdit()
+        self.cerenkov_threshold_layout.addWidget(self.cerenkov_threshold)
+        self.set_threshold_button = QPushButton("Set Cerenkov Threshold (mV)")
+        self.set_threshold_button.clicked.connect(self.set_cerenkov_threshold)
+        self.cerenkov_threshold_layout.addWidget(self.set_threshold_button)
+        self.settings_layout.addLayout(self.cerenkov_threshold_layout)
+
         # Create a layout for each status indicator
         self.cal_layout = QHBoxLayout()
         self.fake_spill_layout = QHBoxLayout()
-        self.hadron_trigger_layout = QHBoxLayout()
+        self.cer_trigger_layout = QHBoxLayout()
         self.master_trigger_layout = QHBoxLayout()
         self.triggers_layout = QHBoxLayout()
         self.spills_layout = QHBoxLayout()
-        self.reset_triggers_layout = QHBoxLayout()
-        self.reset_spills_layout = QHBoxLayout()
+        #self.reset_triggers_layout = QHBoxLayout()
+        #self.reset_spills_layout = QHBoxLayout()
 
         # Add text label to the left of each LED indicator
         self.cal_label = QLabel("CAL ENABLE")
@@ -98,12 +104,12 @@ class MainWindow(QMainWindow):
         self.cal_layout.addWidget(self.cal_status_label)
         self.layout.addLayout(self.cal_layout)
 
-        self.hadron_trigger_label = QLabel("CERENKOV IN TRIGGER")
-        self.hadron_trigger_layout.addWidget(self.hadron_trigger_label)
-        self.hadron_trigger_status_label = QLabel()
-        self.hadron_trigger_status_label.setFixedSize(20, 15)
-        self.hadron_trigger_layout.addWidget(self.hadron_trigger_status_label)
-        self.layout.addLayout(self.hadron_trigger_layout)
+        self.cer_trigger_label = QLabel("CERENKOV IN TRIGGER")
+        self.cer_trigger_layout.addWidget(self.cer_trigger_label)
+        self.cer_trigger_status_label = QLabel()
+        self.cer_trigger_status_label.setFixedSize(20, 15)
+        self.cer_trigger_layout.addWidget(self.cer_trigger_status_label)
+        self.layout.addLayout(self.cer_trigger_layout)
 
         self.fake_spill_label = QLabel("FAKE SPILL")
         self.fake_spill_layout.addWidget(self.fake_spill_label)
@@ -119,31 +125,31 @@ class MainWindow(QMainWindow):
         self.master_trigger_layout.addWidget(self.master_trigger_status_label)
         self.layout.addLayout(self.master_trigger_layout)
 
-        # Add a QLCDNumber to display the number of triggers
-        self.triggers_label = QLabel("TRIGGERS")
-        self.triggers_layout.addWidget(self.triggers_label)
-        self.triggers_lcd = QLCDNumber()
-        self.triggers_lcd.setFixedSize(250, 20)
-        self.triggers_layout.addWidget(self.triggers_lcd)
-        self.layout.addLayout(self.triggers_layout)
-        self.triggers_lcd.setDigitCount(12)
-        self.triggers_lcd.setSegmentStyle(QLCDNumber.Flat)
+        # # Add a QLCDNumber to display the number of triggers
+        # self.triggers_label = QLabel("TRIGGERS")
+        # self.triggers_layout.addWidget(self.triggers_label)
+        # self.triggers_lcd = QLCDNumber()
+        # self.triggers_lcd.setFixedSize(250, 20)
+        # self.triggers_layout.addWidget(self.triggers_lcd)
+        # self.layout.addLayout(self.triggers_layout)
+        # self.triggers_lcd.setDigitCount(12)
+        # self.triggers_lcd.setSegmentStyle(QLCDNumber.Flat)
 
-        # Add a QLCDNumber to display the number of spills (real or fake)
-        self.spills_label = QLabel("SPILLS")
-        self.spills_layout.addWidget(self.spills_label)
-        self.spills_lcd = QLCDNumber()
-        self.spills_lcd.setFixedSize(250, 20)
-        self.spills_layout.addWidget(self.spills_lcd)
-        self.layout.addLayout(self.spills_layout)
-        self.spills_lcd.setDigitCount(12)
-        self.spills_lcd.setSegmentStyle(QLCDNumber.Flat)
+        # # Add a QLCDNumber to display the number of spills (real or fake)
+        # self.spills_label = QLabel("SPILLS")
+        # self.spills_layout.addWidget(self.spills_label)
+        # self.spills_lcd = QLCDNumber()
+        # self.spills_lcd.setFixedSize(250, 20)
+        # self.spills_layout.addWidget(self.spills_lcd)
+        # self.layout.addLayout(self.spills_layout)
+        # self.spills_lcd.setDigitCount(12)
+        # self.spills_lcd.setSegmentStyle(QLCDNumber.Flat)
 
-        # Add the remaing buttons to the main layout
-        for button_text, button_action in self.buttons[-2:]:
-            button = QPushButton(button_text)
-            button.clicked.connect(button_action)
-            self.layout.addWidget(button)
+        # # Add the remaing buttons to the main layout
+        # for button_text, button_action in self.buttons[-2:]:
+        #     button = QPushButton(button_text)
+        #     button.clicked.connect(button_action)
+        #     self.layout.addWidget(button)
 
         # Initialize the devices
         print("Initializing devices...\n")
@@ -161,11 +167,11 @@ class MainWindow(QMainWindow):
             sys.exit(1)
 
         self.update_status_labels()
-        self.update_lcd() 
+        #self.update_lcd() 
 
         # Set a timer to update the lcd every 1s
         self.timer = QTimer()
-        self.timer.timeout.connect(self.update_lcd)
+        #self.timer.timeout.connect(self.update_lcd)
         # Update the status labels
         self.timer.timeout.connect(self.update_status_labels)
         self.timer.start(1000)
@@ -251,34 +257,34 @@ class MainWindow(QMainWindow):
 
         #Retrieve SEC_A input 2 configuration on device 1
         input_status = self.N1081B_device1.get_input_channel_configuration(N1081B.Section.SEC_A,2)
-        hadron_trigger_status = input_status['data'].get('invert') == False
+        cer_trigger_status = input_status['data'].get('invert') == False
         
         # Set the background color of the QLabel based on the status
         self.cal_status_label.setStyleSheet("background-color: green" if cal_status else "background-color: gray")
         self.fake_spill_status_label.setStyleSheet("background-color: green" if fake_spill_status else "background-color: gray")
-        self.hadron_trigger_status_label.setStyleSheet("background-color: green" if hadron_trigger_status else "background-color: gray")
+        self.cer_trigger_status_label.setStyleSheet("background-color: green" if cer_trigger_status else "background-color: gray")
         self.master_trigger_status_label.setStyleSheet("background-color: green" if master_trigger_status else "background-color: gray")
 
-    def update_lcd(self):
-        #Retrieve SEC_D configuration of PLU 2
-        current_config = self.N1081B_device2.get_function_results(N1081B.Section.SEC_D)
-        target_lemo = 0
-        lemo_counters = current_config['data']['counters']
-        scaler = next(item['value'] for item in lemo_counters if item['lemo'] == target_lemo)
-        self.triggers_lcd.display(scaler)
+    # def update_lcd(self):
+    #     #Retrieve SEC_D configuration of PLU 2
+    #     current_config = self.N1081B_device2.get_function_results(N1081B.Section.SEC_D)
+    #     target_lemo = 0
+    #     lemo_counters = current_config['data']['counters']
+    #     scaler = next(item['value'] for item in lemo_counters if item['lemo'] == target_lemo)
+    #     self.triggers_lcd.display(scaler)
 
-        target_lemo = 1
-        lemo_counters = current_config['data']['counters']
-        scaler = next(item['value'] for item in lemo_counters if item['lemo'] == target_lemo)
-        self.spills_lcd.display(scaler)
+    #     target_lemo = 1
+    #     lemo_counters = current_config['data']['counters']
+    #     scaler = next(item['value'] for item in lemo_counters if item['lemo'] == target_lemo)
+    #     self.spills_lcd.display(scaler)
 
-    def reset_trigger_counter(self):
-        self.N1081B_device2.reset_channel(N1081B.Section.SEC_D,0,N1081B.FunctionType.FN_SCALER)
-        self.update_lcd()
+    # def reset_trigger_counter(self):
+    #     self.N1081B_device2.reset_channel(N1081B.Section.SEC_D,0,N1081B.FunctionType.FN_SCALER)
+    #     self.update_lcd()
 
-    def reset_spill_counter(self):
-        self.N1081B_device2.reset_channel(N1081B.Section.SEC_D,1,N1081B.FunctionType.FN_SCALER)
-        self.update_lcd()    
+    # def reset_spill_counter(self):
+    #     self.N1081B_device2.reset_channel(N1081B.Section.SEC_D,1,N1081B.FunctionType.FN_SCALER)
+    #     self.update_lcd()    
 
     def set_cerenkov_off_trigger(self):
         # Set input 2 of SEC_A of device 1 to INVERT
@@ -309,6 +315,17 @@ class MainWindow(QMainWindow):
                                                     N1081B.SignalStandard.STANDARD_DISCRIMINATOR,
                                                     th_value,
                                                     N1081B.SignalImpedance.IMPEDANCE_50)
+        
+    def set_cerenkov_threshold(self):
+        # Retrieve threshold value from the QLineEdit
+        th_value = int(self.cerenkov_threshold.text())
+        # Set the threshold value for the discriminator of SEC_A of device 1
+        self.N1081B_device2.set_input_configuration(N1081B.Section.SEC_D, 
+                                                    N1081B.SignalStandard.STANDARD_DISCRIMINATOR, 
+                                                    N1081B.SignalStandard.STANDARD_DISCRIMINATOR,
+                                                    th_value,
+                                                    N1081B.SignalImpedance.IMPEDANCE_50)        
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
