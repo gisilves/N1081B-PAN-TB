@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QLCDNumber, QTabWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QLCDNumber, QTabWidget, QLineEdit
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QPixmap
 from N1081B_sdk import N1081B
@@ -64,9 +64,35 @@ class MainWindow(QMainWindow):
             button.setStyleSheet("; ".join(f"{key}: {value}" for key, value in self.button_styles.items()))
             self.button_layout.addWidget(button)
 
-        # Add the second tab
+        # Add the second tab for the settings
         self.tab2 = QWidget()
         self.tab_widget.addTab(self.tab2, "Settings")
+
+        # Add a layout for the settings tab
+        self.settings_layout = QVBoxLayout()
+        self.tab2.setLayout(self.settings_layout)
+
+        self.scint_threshold_label = QLabel("Scintillator Threshold")
+        self.settings_layout.addWidget(self.scint_threshold_label)
+
+        self.scint_threshold_layout = QHBoxLayout()
+        self.scint_threshold = QLineEdit()
+        self.scint_threshold_layout.addWidget(self.scint_threshold)
+        self.set_threshold_button = QPushButton("Set Scintillator Threshold")
+        self.set_threshold_button.clicked.connect(self.set_scint_threshold)
+        self.scint_threshold_layout.addWidget(self.set_threshold_button)
+        self.settings_layout.addLayout(self.scint_threshold_layout)
+
+        self.cerenkov_threshold_label = QLabel("Cerenkov Threshold")
+        self.settings_layout.addWidget(self.cerenkov_threshold_label)
+
+        self.cerenkov_threshold_layout = QHBoxLayout()
+        self.cerenkov_threshold = QLineEdit()
+        self.cerenkov_threshold_layout.addWidget(self.cerenkov_threshold)
+        self.set_threshold_button = QPushButton("Set Cerenkov Threshold")
+        self.set_threshold_button.clicked.connect(self.set_cerenkov_threshold)
+        self.cerenkov_threshold_layout.addWidget(self.set_threshold_button)
+        self.settings_layout.addLayout(self.cerenkov_threshold_layout)
 
         # Create a layout for each status indicator
         self.cal_layout = QHBoxLayout()
@@ -280,6 +306,12 @@ class MainWindow(QMainWindow):
         self.N1081B_device1.set_input_channel_configuration(N1081B.Section.SEC_A,channel=2, status=True, invert=False, enable_gate_delay=False, gate = 15, delay = 0)
         self.update_status_labels()
 
+    def set_cerenkov_threshold(self):
+        pass
+
+    def set_scint_threshold(self):
+        pass
+        
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
