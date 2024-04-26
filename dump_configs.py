@@ -5,8 +5,10 @@ from N1081B_sdk import N1081B
 pp = pprint.PrettyPrinter(indent=4)
 
 print("Info for the first device")
-
-N1081B_device1 = N1081B("pool05940004.cern.ch")
+# Ask for the ip address of the device
+print("Please enter the IP address of the device:")
+ip_address = input()
+N1081B_device1 = N1081B(ip_address)
 N1081B_device1.connect()
 version_json = N1081B_device1.get_version()
 pp.pprint(version_json)
@@ -25,8 +27,11 @@ with open('config1.json', 'w') as outfile:
 print("\n\n\n")
 
 print("Info for the second device")
+# Ask for the ip address of the device
+print("Please enter the IP address of the device:")
+ip_address = input()
 
-N1081B_device2 = N1081B("pool05940001.cern.ch")
+N1081B_device2 = N1081B(ip_address)
 N1081B_device2.connect()
 version_json = N1081B_device2.get_version()
 pp.pprint(version_json)
